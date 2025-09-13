@@ -10,6 +10,11 @@ class Status(models.TextChoices):
 class Video(models.Model):
 	title = models.CharField(max_length=120)
 	description = models.TextField(blank=True, max_length=1000)
+	thumbnail = models.ImageField(
+		upload_to="thumbnails/",
+		null=True,
+		blank=True
+	)
 	file_original = models.FileField(upload_to='uploads/')
 	file_converted = models.FileField(upload_to='converted/', null=True, blank=True)
 	status = models.CharField(
