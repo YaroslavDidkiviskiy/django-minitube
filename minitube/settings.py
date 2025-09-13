@@ -39,7 +39,6 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'videos.apps.VideosConfig',
     "rest_framework",
-    "videos"
 ]
 
 MIDDLEWARE = [
