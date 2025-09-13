@@ -3,6 +3,11 @@ from rest_framework import serializers
 from videos.models import Video
 
 
+THUMB_MAX_MB = 10
+THUMB_EXTS = {".jpg", ".jpeg", ".png", ".webp"}
+THUMB_CTS = {"image/jpeg", "image/png", "image/webp"}
+
+
 MAX_DESCRIPTION_LENGTH = 1000
 MAX_FILE_MB = 500
 ALLOWED_EXTS = {".mp4", ".mov", ".mkv", ".avi", ".webm"}
@@ -21,6 +26,7 @@ class VideoSerializer(serializers.ModelSerializer):
 			"id",
 			"title",
 			"description",
+			"thumbnail",
 			"file_original",
 			"file_converted",
 			"status",
@@ -40,7 +46,6 @@ class VideoSerializer(serializers.ModelSerializer):
 			"dislikes",
 			"duration",
 			"created_at",
-			"slug",
 		]
 
 	def validate_title(self, value: str) -> str:
@@ -58,14 +63,43 @@ class VideoSerializer(serializers.ModelSerializer):
 					f"Description cannot be longer than {MAX_DESCRIPTION_LENGTH} characters."
 				)
 		return value
+	
+	def validate_thumbnail(self, file):
+		# дозволяємо не передавати: None → ок
+		if not file:
+			return file
+		
+		# розмір
+		thumb_size_mb = file.size / (1024 * 1024)
+		if thumb_size_mb > THUMB_MAX_MB:
+			raise serializers.ValidationError(
+				f"Thumbnail too large ({thumb_size_mb:.1f} MB). Max is {THUMB_MAX_MB} MB."
+			)
+		
+		# розширення
+		ext = Path(getattr(file, "name", "")).suffix.lower()
+		if ext not in THUMB_EXTS:
+			allowed = ", ".join(sorted(THUMB_EXTS))
+			raise serializers.ValidationError(
+				f"Unsupported thumbnail extension '{ext}'. Allowed: {allowed}."
+			)
+		
+		# content-type
+		ct = getattr(file, "content_type", None)
+		if ct and ct not in THUMB_CTS:
+			allowed_ct = ", ".join(sorted(THUMB_CTS))
+			raise serializers.ValidationError(
+				f"Unsupported thumbnail content type '{ct}'. Allowed: {allowed_ct}."
+			)
+		return file
 
 	def validate_file_original(self, file):
 		if not file:
 			raise serializers.ValidationError("Video file is required.")
 
-		size_mb = file.size / (1024 * 1024)
-		if size_mb > MAX_FILE_MB:
-			raise serializers.ValidationError(f"File too large ({size_mb:.1f} MB). Max is {MAX_FILE_MB} MB.")
+		video_size_mb = file.size / (1024 * 1024)
+		if video_size_mb > MAX_FILE_MB:
+			raise serializers.ValidationError(f"File too large ({video_size_mb:.1f} MB). Max is {MAX_FILE_MB} MB.")
 
 
 		ext = Path(getattr(file, "name", "")).suffix.lower()
