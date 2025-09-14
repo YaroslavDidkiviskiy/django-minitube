@@ -20,6 +20,11 @@ ALLOWED_CONTENT_TYPES = {
 }
 
 class VideoSerializer(serializers.ModelSerializer):
+	author = serializers.SlugRelatedField(
+		slug_field="email",
+		read_only=True
+	)
+	
 	class Meta:
 		model = Video
 		fields = [
@@ -36,6 +41,7 @@ class VideoSerializer(serializers.ModelSerializer):
 			"duration",
 			"created_at",
 			"slug",
+			"author",
 		]
 		read_only_fields = [
 			"id",
@@ -46,6 +52,8 @@ class VideoSerializer(serializers.ModelSerializer):
 			"dislikes",
 			"duration",
 			"created_at",
+			"slug",
+			"author",
 		]
 
 	def validate_title(self, value: str) -> str:
@@ -65,26 +73,22 @@ class VideoSerializer(serializers.ModelSerializer):
 		return value
 	
 	def validate_thumbnail(self, file):
-		# дозволяємо не передавати: None → ок
 		if not file:
 			return file
-		
-		# розмір
+
 		thumb_size_mb = file.size / (1024 * 1024)
 		if thumb_size_mb > THUMB_MAX_MB:
 			raise serializers.ValidationError(
 				f"Thumbnail too large ({thumb_size_mb:.1f} MB). Max is {THUMB_MAX_MB} MB."
 			)
-		
-		# розширення
+
 		ext = Path(getattr(file, "name", "")).suffix.lower()
 		if ext not in THUMB_EXTS:
 			allowed = ", ".join(sorted(THUMB_EXTS))
 			raise serializers.ValidationError(
 				f"Unsupported thumbnail extension '{ext}'. Allowed: {allowed}."
 			)
-		
-		# content-type
+
 		ct = getattr(file, "content_type", None)
 		if ct and ct not in THUMB_CTS:
 			allowed_ct = ", ".join(sorted(THUMB_CTS))

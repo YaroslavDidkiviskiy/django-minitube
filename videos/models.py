@@ -1,3 +1,4 @@
+from django.conf import settings
 from django.db import models
 
 class Status(models.TextChoices):
@@ -21,6 +22,13 @@ class Video(models.Model):
 		max_length=120,
 		choices=Status.choices,
 		default="Pending",
+	)
+	author = models.ForeignKey(
+		settings.AUTH_USER_MODEL,
+		on_delete=models.CASCADE,
+		related_name="videos",
+		db_index=True,
+		null=True, blank=True
 	)
 	views = models.IntegerField(default=0)
 	likes = models.IntegerField(default=0)
