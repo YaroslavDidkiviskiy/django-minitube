@@ -120,3 +120,9 @@ class VideoSerializer(serializers.ModelSerializer):
 			raise serializers.ValidationError(f"Unsupported content type '{content_type}'. Allowed: {allowed_ct}.")
 
 		return file
+
+
+class VideoListSerializer(VideoSerializer):
+	
+	class Meta(VideoSerializer.Meta):
+		fields = ("id", "title", "thumbnail", "views", "author", "created_at", "duration")
