@@ -24,6 +24,8 @@ class VideoSerializer(serializers.ModelSerializer):
 		slug_field="email",
 		read_only=True
 	)
+	file_original = serializers.FileField(write_only=True)
+	thumbnail = serializers.ImageField(required=False, allow_null=True, write_only=True)
 	
 	class Meta:
 		model = Video
