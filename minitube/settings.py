@@ -138,11 +138,6 @@ SPECTACULAR_SETTINGS = {
         "defaultModelsExpandDepth": 2,
         "defaultModelExpandDepth": 2,
     },
-    "APPEND_COMPONENTS": {
-        "securitySchemes": {
-            "BearerAuth": {"type": "http", "scheme": "bearer", "bearerFormat": "JWT"}
-        }
-    },
     "SECURITY": [{"BearerAuth": []}],
 }
 
